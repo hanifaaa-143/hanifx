@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HanifX Gaming Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080810;
+  --bg1:      #0b0b16;
+  --bg2:      #0f0f1e;
+  --bg3:      #141428;
+  --surface:  #1a1a30;
+  --surface2: #1e1e36;
+  --accent:   #6c63ff;
+  --accentL:  #9b94ff;
+  --accentD:  #4a42cc;
+  --cyan:     #00d4ff;
+  --rose:     #ff4d6d;
+  --gold:     #f0b429;
+  --green:    #00c896;
+  --tx:       #e8e8f5;
+  --tx2:      #8888b0;
+  --tx3:      #4a4a70;
+  --bdr:      rgba(108,99,255,0.14);
+  --bdr2:     rgba(108,99,255,0.35);
+  --glow:     rgba(108,99,255,0.18);
+  --shadow:   0 24px 80px rgba(0,0,0,0.7);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:'Syne',sans-serif;
+  background:var(--bg);
+  color:var(--tx);
+  overflow-x:hidden;
+  cursor:none;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--bg1); }
+::-webkit-scrollbar-thumb { background:var(--accent); border-radius:99px; }
+
+/* ── CURSOR ── */
+#cur { position:fixed; width:8px; height:8px; background:var(--accent); border-radius:50%; pointer-events:none; z-index:99999; transform:translate(-50%,-50%); transition:transform .08s,width .2s,height .2s; mix-blend-mode:exclusion; }
+#cur-r { position:fixed; width:32px; height:32px; border:1.5px solid rgba(108,99,255,.5); border-radius:50%; pointer-events:none; z-index:99998; transform:translate(-50%,-50%); transition:all .14s ease; }
+body.clicking #cur { transform:translate(-50%,-50%) scale(2); }
+
+/* ── CANVAS ── */
+#bgc { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5; }
+
+/* ── NOISE ── */
+.noise { position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* ── VIGNETTE ── */
+.vignette { position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.65) 100%); }
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:500;
+  height:68px; padding:0 6%;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:all .4s;
+}
+nav.sc {
+  background:rgba(8,8,16,.88);
+  backdrop-filter:blur(24px) saturate(1.4);
+  border-bottom:1px solid var(--bdr);
+  box-shadow:0 8px 40px rgba(0,0,0,.4);
+}
+.n-logo { display:flex; align-items:center; gap:11px; text-decoration:none; }
+.n-logo-icon {
+  width:40px; height:40px; border-radius:10px;
+  background:linear-gradient(135deg,var(--accentD),var(--accent));
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; box-shadow:0 0 24px var(--glow);
+  animation:iFloat 4s ease-in-out infinite;
+}
+@keyframes iFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.n-logo-wrap { display:flex; flex-direction:column; }
+.n-logo-name {
+  font-family:'Orbitron',monospace; font-size:15px; font-weight:900;
+  letter-spacing:2px; color:var(--tx);
+}
+.n-logo-tag { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--accent); letter-spacing:3px; }
+.n-links { display:flex; align-items:center; gap:28px; }
+.n-link {
+  font-size:12px; font-weight:600; letter-spacing:2px;
+  text-transform:uppercase; color:var(--tx2); text-decoration:none;
+  transition:color .2s; position:relative;
+}
+.n-link::after { content:''; position:absolute; bottom:-4px; left:0; right:0; height:1.5px; background:var(--accent); transform:scaleX(0); transform-origin:right; transition:transform .3s; }
+.n-link:hover { color:var(--tx); }
+.n-link:hover::after { transform:scaleX(1); transform-origin:left; }
+.n-right { display:flex; align-items:center; gap:10px; }
+.n-icon-btn {
+  width:38px; height:38px; border-radius:10px;
+  background:rgba(108,99,255,.08); border:1px solid var(--bdr);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:15px; transition:all .2s;
+}
+.n-icon-btn:hover { border-color:var(--accent); background:rgba(108,99,255,.16); }
+.cart-btn {
+  display:flex; align-items:center; gap:8px;
+  padding:9px 20px; border:none; border-radius:10px;
+  background:var(--accent); color:#fff;
+  font-family:'Syne',sans-serif; font-size:12px; font-weight:700;
+  letter-spacing:1.5px; text-transform:uppercase; cursor:pointer;
+  transition:all .3s; box-shadow:0 4px 24px var(--glow);
+}
+.cart-btn:hover { background:var(--accentL); transform:translateY(-1px); box-shadow:0 8px 32px var(--glow); }
+.c-cnt {
+  background:var(--rose); color:#fff; width:18px; height:18px;
+  border-radius:50%; font-size:9px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* ── HERO ── */
+.hero {
+  position:relative; min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:80px 6% 0; overflow:hidden; z-index:2;
+}
+.hero-orbs { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.orb {
+  position:absolute; border-radius:50%; filter:blur(110px);
+  animation:orbF 10s ease-in-out infinite;
+}
+.o1 { width:700px; height:700px; background:rgba(108,99,255,.12); top:-15%; left:-10%; animation-delay:0s; }
+.o2 { width:500px; height:500px; background:rgba(0,212,255,.07); top:30%; right:-5%; animation-delay:4s; }
+.o3 { width:400px; height:400px; background:rgba(255,77,109,.06); bottom:0; left:35%; animation-delay:7s; }
+@keyframes orbF { 0%,100%{transform:translate(0,0) scale(1)} 40%{transform:translate(20px,-25px) scale(1.04)} 80%{transform:translate(-18px,15px) scale(.97)} }
+
+/* GRID OVERLAY */
+.hero-grid {
+  position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(108,99,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108,99,255,.04) 1px, transparent 1px);
+  background-size:72px 72px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+.hero-inner { position:relative; z-index:2; text-align:center; max-width:860px; }
+
+.h-eyebrow {
+  display:inline-flex; align-items:center; gap:9px;
+  padding:7px 20px; border-radius:99px;
+  background:rgba(108,99,255,.1); border:1px solid rgba(108,99,255,.28);
+  font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accentL);
+  letter-spacing:3px; text-transform:uppercase; margin-bottom:30px;
+  animation:fdU .8s ease both;
+}
+.h-eye-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+@keyframes fdU { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+
+.h-title {
+  font-family:'Orbitron',monospace;
+  font-size:clamp(38px,6.5vw,82px);
+  font-weight:900; line-height:1.02;
+  letter-spacing:-1px; margin-bottom:22px;
+  animation:fdU2 .9s ease .15s both;
+}
+@keyframes fdU2 { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+.h-title .line1 { display:block; color:var(--tx); }
+.h-title .line2 {
+  display:block;
+  background:linear-gradient(90deg,var(--accent),var(--cyan),var(--accent));
+  background-size:200% 100%;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  animation:shimmer 4s linear infinite;
+}
+@keyframes shimmer { 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
+
+.h-sub {
+  font-size:15px; color:var(--tx2); line-height:1.9;
+  letter-spacing:.5px; max-width:560px; margin:0 auto 38px;
+  animation:fdU2 .9s ease .28s both;
+}
+.h-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; animation:fdU2 .9s ease .4s both; }
+.btn-hero {
+  padding:14px 34px; border-radius:12px; border:none;
+  font-family:'Syne',sans-serif; font-size:12px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .3s;
+}
+.btn-solid {
+  background:var(--accent); color:#fff;
+  box-shadow:0 4px 28px var(--glow);
+}
+.btn-solid:hover { background:var(--accentL); transform:translateY(-2px); box-shadow:0 10px 40px var(--glow); }
+.btn-outline {
+  background:transparent; color:var(--tx2);
+  border:1.5px solid var(--bdr2);
+}
+.btn-outline:hover { border-color:var(--accent); color:var(--tx); background:rgba(108,99,255,.07); }
+
+/* HERO STATS */
+.h-stats { display:flex; gap:0; justify-content:center; margin-top:56px; animation:fdU2 .9s ease .55s both; }
+.h-stat { text-align:center; padding:0 36px; }
+.h-stat + .h-stat { border-left:1px solid var(--bdr); }
+.h-stat-n { font-family:'Orbitron',monospace; font-size:26px; font-weight:900; color:var(--accentL); }
+.h-stat-l { font-size:10px; letter-spacing:3px; color:var(--tx3); text-transform:uppercase; margin-top:5px; }
+
+/* FLOATING CARDS */
+.h-cards { position:absolute; inset:0; pointer-events:none; z-index:1; }
+.hc {
+  position:absolute;
+  background:rgba(15,15,30,.85); backdrop-filter:blur(12px);
+  border:1px solid var(--bdr); border-radius:14px;
+  padding:14px 18px; min-width:140px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(108,99,255,.08);
+}
+.hc1 { top:22%; left:5%; animation:hc1f 7s ease-in-out infinite; }
+.hc2 { top:18%; right:5%; animation:hc2f 6s ease-in-out infinite; }
+.hc3 { bottom:20%; left:6%; animation:hc3f 8s ease-in-out infinite; }
+.hc4 { bottom:24%; right:5%; animation:hc4f 5.5s ease-in-out infinite; }
+@keyframes hc1f { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-18px) rotate(1deg)} }
+@keyframes hc2f { 0%,100%{transform:translateY(0) rotate(2deg)} 50%{transform:translateY(-22px) rotate(-1deg)} }
+@keyframes hc3f { 0%,100%{transform:translateY(0) rotate(1deg)} 50%{transform:translateY(-14px) rotate(-2deg)} }
+@keyframes hc4f { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-20px) rotate(2deg)} }
+.hc-ico { font-size:24px; margin-bottom:8px; }
+.hc-label { font-size:11px; font-weight:700; color:var(--tx); letter-spacing:.5px; }
+.hc-val { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--tx2); margin-top:3px; }
+.hc-pill {
+  display:inline-block; margin-top:8px; padding:2px 9px; border-radius:99px;
+  font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+}
+.pill-g { background:rgba(0,200,150,.12); color:var(--green); border:1px solid rgba(0,200,150,.25); }
+.pill-r { background:rgba(255,77,109,.12); color:var(--rose); border:1px solid rgba(255,77,109,.25); }
+.pill-b { background:rgba(108,99,255,.14); color:var(--accentL); border:1px solid rgba(108,99,255,.28); }
+.pill-y { background:rgba(240,180,41,.12); color:var(--gold); border:1px solid rgba(240,180,41,.25); }
+
+/* SCROLL HINT */
+.scroll-hint { position:absolute; bottom:32px; left:50%; transform:translateX(-50%); z-index:2;
+  display:flex; flex-direction:column; align-items:center; gap:7px; animation:fdU2 1s ease 1s both; }
+.sc-line { width:1px; height:44px; background:linear-gradient(180deg,var(--accent),transparent); animation:scl 2s ease-in-out infinite; }
+@keyframes scl { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 100%{transform:scaleY(0);transform-origin:bottom} }
+.sc-txt { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--tx3); letter-spacing:3px; }
+
+/* ── TICKER ── */
+.ticker { position:relative; z-index:2; overflow:hidden; background:rgba(108,99,255,.06); border-top:1px solid var(--bdr); border-bottom:1px solid var(--bdr); padding:13px 0; }
+.ticker-inner { display:flex; gap:56px; width:max-content; animation:tick 22s linear infinite; }
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.tick-item { display:flex; align-items:center; gap:10px; white-space:nowrap; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--tx2); text-transform:uppercase; }
+.tick-sep { width:4px; height:4px; border-radius:50%; background:var(--accent); }
+
+/* ── SECTION ── */
+section { position:relative; z-index:2; padding:80px 6%; }
+.s-eyebrow { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.s-ey-line { width:28px; height:1.5px; background:var(--accent); }
+.s-ey-txt { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:4px; text-transform:uppercase; }
+.s-title { font-family:'Orbitron',monospace; font-size:clamp(22px,3.5vw,36px); font-weight:900; letter-spacing:1px; margin-bottom:10px; }
+.s-sub { font-size:13px; color:var(--tx2); letter-spacing:.5px; line-height:1.8; max-width:460px; }
+.s-head { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:32px; }
+
+/* ── FILTERS ── */
+.filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; }
+.f-btn {
+  padding:7px 18px; border-radius:8px;
+  background:transparent; border:1px solid var(--bdr);
+  color:var(--tx2); font-family:'Syne',sans-serif;
+  font-size:11px; font-weight:600; letter-spacing:1.5px;
+  text-transform:uppercase; cursor:pointer; transition:all .2s;
+}
+.f-btn:hover, .f-btn.on { border-color:var(--accent); color:var(--accentL); background:rgba(108,99,255,.09); }
+
+/* ── GAME GRID ── */
+.g-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(255px,1fr)); gap:18px; }
+
+/* ── GAME CARD ── */
+.gc {
+  background:var(--bg2); border:1px solid var(--bdr); border-radius:16px;
+  overflow:hidden; transition:all .4s cubic-bezier(.2,.8,.3,1);
+  position:relative; cursor:pointer;
+}
+.gc:hover {
+  transform:translateY(-7px);
+  border-color:var(--accent);
+  box-shadow:0 32px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(108,99,255,.2), 0 0 50px rgba(108,99,255,.08);
+}
+.gc-img-wrap { position:relative; overflow:hidden; height:175px; }
+.gc-img { width:100%; height:100%; object-fit:cover; transition:transform .55s ease; display:block; }
+.gc-img-ph {
+  width:100%; height:100%;
+  background:linear-gradient(135deg,var(--bg3),var(--surface));
+  display:flex; align-items:center; justify-content:center;
+  font-size:54px; transition:transform .55s ease;
+}
+.gc:hover .gc-img, .gc:hover .gc-img-ph { transform:scale(1.07); }
+.gc-img-fade { position:absolute; bottom:0; left:0; right:0; height:60%; background:linear-gradient(0deg,var(--bg2),transparent); }
+.gc-chips { position:absolute; top:12px; left:12px; display:flex; gap:6px; z-index:2; }
+.chip { padding:3px 9px; border-radius:6px; font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; backdrop-filter:blur(8px); }
+.chip-feat { background:rgba(108,99,255,.85); color:#fff; }
+.chip-sale { background:rgba(240,180,41,.9); color:#000; }
+.chip-new  { background:rgba(0,200,150,.85); color:#fff; }
+.chip-hot  { background:rgba(255,77,109,.85); color:#fff; }
+.gc-wish {
+  position:absolute; top:12px; right:12px; z-index:2;
+  width:32px; height:32px; border-radius:8px;
+  background:rgba(8,8,16,.6); border:1px solid var(--bdr);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:13px; transition:all .2s; backdrop-filter:blur(8px);
+}
+.gc-wish:hover { background:rgba(255,77,109,.2); border-color:rgba(255,77,109,.4); }
+.gc-wish.on { background:rgba(255,77,109,.25); border-color:var(--rose); }
+.gc-body { padding:16px; }
+.gc-platform { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--tx3); letter-spacing:2px; text-transform:uppercase; margin-bottom:5px; }
+.gc-title { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; letter-spacing:.5px; color:var(--tx); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gc-dev { font-size:11px; color:var(--tx3); margin-bottom:12px; }
+.gc-footer { display:flex; align-items:center; justify-content:space-between; }
+.gc-rating { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--gold); }
+.gc-rating span { color:var(--tx3); font-size:10px; }
+.gc-price-wrap { display:flex; align-items:center; gap:7px; }
+.gc-price { font-family:'Orbitron',monospace; font-size:15px; font-weight:900; color:var(--accentL); }
+.gc-orig { font-size:10px; color:var(--tx3); text-decoration:line-through; font-family:'JetBrains Mono',monospace; }
+.gc-cta { padding:11px 16px; margin:12px 16px 16px; border-radius:10px; border:none; width:calc(100% - 32px); background:rgba(108,99,255,.14); border:1px solid rgba(108,99,255,.25); color:var(--accentL); font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .3s; }
+.gc-cta:hover { background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:0 4px 24px var(--glow); }
+
+/* ── EMPTY ── */
+.empty-state { grid-column:1/-1; text-align:center; padding:72px 24px; }
+.empty-ico { font-size:48px; opacity:.18; margin-bottom:18px; }
+.empty-t { font-family:'Orbitron',monospace; font-size:12px; letter-spacing:4px; color:var(--tx3); margin-bottom:8px; }
+.empty-s { font-size:12px; color:var(--tx3); letter-spacing:.5px; line-height:1.7; }
+
+/* ── CATEGORIES ── */
+.cats { display:grid; grid-template-columns:repeat(auto-fill,minmax(145px,1fr)); gap:12px; margin-top:36px; }
+.cat {
+  background:var(--bg2); border:1px solid var(--bdr); border-radius:14px;
+  padding:22px 16px; text-align:center; cursor:pointer; transition:all .3s;
+  position:relative; overflow:hidden;
+}
+.cat::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(108,99,255,.06),transparent); opacity:0; transition:opacity .3s; }
+.cat:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 20px 50px rgba(0,0,0,.5), 0 0 30px var(--glow); }
+.cat:hover::before { opacity:1; }
+.cat-ico { font-size:30px; margin-bottom:10px; display:block; }
+.cat-n { font-family:'Orbitron',monospace; font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--tx); }
+.cat-c { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--tx3); letter-spacing:2px; margin-top:5px; }
+
+/* ── DEALS ── */
+.deal-timer {
+  background:linear-gradient(135deg,rgba(255,77,109,.07),rgba(108,99,255,.05));
+  border:1px solid rgba(255,77,109,.18); border-radius:16px;
+  padding:28px 32px; margin-bottom:48px;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;
+}
+.dt-left .dt-title { font-family:'Orbitron',monospace; font-size:18px; font-weight:900; letter-spacing:2px; margin-bottom:5px; }
+.dt-left .dt-sub { font-size:12px; color:var(--tx2); letter-spacing:1px; }
+.dt-blocks { display:flex; gap:10px; align-items:center; }
+.dt-b { text-align:center; background:rgba(0,0,0,.35); border:1px solid var(--bdr); border-radius:10px; padding:12px 18px; min-width:68px; }
+.dt-n { font-family:'Orbitron',monospace; font-size:26px; font-weight:900; color:var(--rose); line-height:1; }
+.dt-l { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--tx3); letter-spacing:2px; margin-top:5px; }
+.dt-sep { font-family:'Orbitron',monospace; font-size:22px; color:var(--rose); animation:blink 1s infinite; }
+
+.deals-g { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:14px; }
+.deal-c {
+  background:var(--bg2); border:1px solid rgba(240,180,41,.15); border-radius:14px;
+  padding:18px; display:flex; gap:14px; align-items:center;
+  cursor:pointer; transition:all .3s; position:relative; overflow:hidden;
+}
+.deal-c::before { content:''; position:absolute; top:0; left:0; right:0; height:1.5px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+.deal-c:hover { border-color:rgba(240,180,41,.4); transform:translateY(-3px); box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 30px rgba(240,180,41,.07); }
+.deal-thumb { width:58px; height:58px; border-radius:10px; background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; overflow:hidden; }
+.deal-thumb img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
+.deal-info { flex:1; }
+.deal-t { font-weight:700; font-size:13px; color:var(--tx); margin-bottom:3px; }
+.deal-d { font-size:10px; color:var(--tx3); margin-bottom:8px; letter-spacing:.5px; }
+.deal-pr { display:flex; align-items:center; gap:8px; }
+.deal-new { font-family:'Orbitron',monospace; font-size:15px; font-weight:900; color:var(--green); }
+.deal-old { font-size:11px; color:var(--tx3); text-decoration:line-through; font-family:'JetBrains Mono',monospace; }
+.deal-off { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1px; background:rgba(240,180,41,.12); color:var(--gold); border:1px solid rgba(240,180,41,.28); padding:2px 7px; border-radius:5px; }
+
+/* ── REVIEWS ── */
+.rev-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(275px,1fr)); gap:14px; margin-top:36px; }
+.rev-c { background:var(--bg2); border:1px solid var(--bdr); border-radius:14px; padding:22px; }
+.rev-stars { color:var(--gold); font-size:12px; letter-spacing:2px; margin-bottom:12px; }
+.rev-q { font-size:13px; color:var(--tx2); line-height:1.8; letter-spacing:.3px; margin-bottom:16px; }
+.rev-author { display:flex; align-items:center; gap:10px; }
+.rev-av { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--accentD),var(--cyan)); display:flex; align-items:center; justify-content:center; font-family:'Orbitron',monospace; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+.rev-name { font-size:13px; font-weight:700; letter-spacing:.5px; }
+.rev-badge { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--tx3); letter-spacing:2px; margin-top:2px; }
+
+/* ── NEWSLETTER ── */
+.nw-box {
+  background:var(--bg2); border:1px solid var(--bdr); border-radius:20px;
+  padding:52px 48px; text-align:center; position:relative; overflow:hidden;
+}
+.nw-box::before { content:''; position:absolute; top:-40%; left:-10%; width:120%; height:200%; background:radial-gradient(ellipse,rgba(108,99,255,.06) 0%,transparent 65%); pointer-events:none; animation:nwG 5s ease-in-out infinite; }
+@keyframes nwG { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+.nw-box h2 { font-family:'Orbitron',monospace; font-size:clamp(18px,3vw,28px); font-weight:900; letter-spacing:2px; margin-bottom:10px; position:relative; }
+.nw-box p { font-size:13px; color:var(--tx2); letter-spacing:.5px; margin-bottom:28px; position:relative; }
+.nw-form { display:flex; gap:10px; max-width:460px; margin:0 auto; position:relative; }
+.nw-inp { flex:1; background:rgba(0,0,0,.35); border:1px solid var(--bdr); border-radius:10px; padding:13px 18px; color:var(--tx); font-family:'Syne',sans-serif; font-size:13px; outline:none; letter-spacing:.5px; transition:border-color .2s; }
+.nw-inp:focus { border-color:var(--accent); }
+.nw-inp::placeholder { color:var(--tx3); }
+.nw-btn { padding:13px 24px; background:var(--accent); border:none; border-radius:10px; color:#fff; font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .3s; white-space:nowrap; }
+.nw-btn:hover { background:var(--accentL); box-shadow:0 6px 24px var(--glow); transform:translateY(-1px); }
+
+/* ── FOOTER ── */
+footer { position:relative; z-index:2; padding:56px 6% 28px; border-top:1px solid var(--bdr); background:var(--bg1); }
+.foot-grid { display:grid; grid-template-columns:2.2fr 1fr 1fr 1fr; gap:40px; margin-bottom:40px; }
+.foot-brand-name { font-family:'Orbitron',monospace; font-size:18px; font-weight:900; letter-spacing:2px; background:linear-gradient(135deg,var(--accentL),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:12px; }
+.foot-brand-tag { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--accent); letter-spacing:3px; margin-bottom:14px; }
+.foot-desc { font-size:12px; color:var(--tx2); line-height:1.9; max-width:280px; }
+.foot-socials { display:flex; gap:8px; margin-top:18px; }
+.foot-soc { width:34px; height:34px; background:rgba(108,99,255,.08); border:1px solid var(--bdr); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; transition:all .2s; }
+.foot-soc:hover { border-color:var(--accent); background:rgba(108,99,255,.16); }
+.foot-col h4 { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--tx); margin-bottom:16px; }
+.foot-col a { display:block; font-size:12px; color:var(--tx2); text-decoration:none; margin-bottom:9px; letter-spacing:.5px; transition:color .2s; }
+.foot-col a:hover { color:var(--accentL); }
+.foot-bottom { border-top:1px solid var(--bdr); padding-top:22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.foot-copy { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--tx3); letter-spacing:1px; }
+.foot-tags { display:flex; gap:8px; }
+.ftag { padding:3px 10px; background:rgba(108,99,255,.07); border:1px solid var(--bdr); border-radius:5px; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--tx3); letter-spacing:1px; }
+.foot-admin { padding:3px 10px; background:rgba(108,99,255,.1); border:1px solid rgba(108,99,255,.25); border-radius:5px; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--accentL); letter-spacing:1px; text-decoration:none; transition:all .2s; }
+.foot-admin:hover { background:rgba(108,99,255,.2); }
+
+/* ── CART PANEL ── */
+.cart-panel { position:fixed; top:0; right:-430px; width:430px; height:100vh; background:var(--bg1); border-left:1px solid var(--bdr); z-index:2000; transition:right .4s cubic-bezier(.2,.8,.3,1); display:flex; flex-direction:column; backdrop-filter:blur(24px); }
+.cart-panel.open { right:0; box-shadow:-20px 0 80px rgba(0,0,0,.6); }
+.cp-head { padding:22px; border-bottom:1px solid var(--bdr); display:flex; align-items:center; justify-content:space-between; }
+.cp-title { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; letter-spacing:4px; }
+.cp-close { width:30px; height:30px; background:var(--bg2); border:1px solid var(--bdr); border-radius:7px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--tx2); transition:all .2s; }
+.cp-close:hover { color:var(--rose); border-color:rgba(255,77,109,.3); }
+.cp-items { flex:1; overflow-y:auto; padding:14px; }
+.cp-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; text-align:center; }
+.cp-empty-ico { font-size:48px; opacity:.15; }
+.cp-empty-t { font-family:'Orbitron',monospace; font-size:11px; letter-spacing:4px; color:var(--tx3); }
+.ci { display:flex; gap:12px; padding:13px; background:var(--bg2); border:1px solid var(--bdr); border-radius:10px; margin-bottom:9px; align-items:center; }
+.ci-img { width:50px; height:50px; border-radius:8px; overflow:hidden; background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.ci-img img { width:100%; height:100%; object-fit:cover; }
+.ci-info { flex:1; }
+.ci-t { font-weight:700; font-size:12px; letter-spacing:.3px; margin-bottom:2px; }
+.ci-p { font-family:'Orbitron',monospace; font-size:13px; font-weight:900; color:var(--accentL); margin-top:4px; }
+.ci-rm { width:26px; height:26px; background:rgba(255,77,109,.07); border:1px solid rgba(255,77,109,.18); border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--rose); transition:all .2s; }
+.ci-rm:hover { background:rgba(255,77,109,.18); }
+.cp-foot { padding:18px 22px; border-top:1px solid var(--bdr); }
+.cp-total { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.cp-total-l { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--tx2); letter-spacing:2px; text-transform:uppercase; }
+.cp-total-v { font-family:'Orbitron',monospace; font-size:20px; font-weight:900; color:var(--accentL); }
+.btn-checkout { width:100%; padding:14px; background:var(--accent); border:none; border-radius:10px; color:#fff; font-family:'Syne',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .3s; box-shadow:0 4px 24px var(--glow); }
+.btn-checkout:hover { background:var(--accentL); transform:translateY(-1px); box-shadow:0 8px 36px var(--glow); }
+
+/* CART OVERLAY */
+.cart-ov { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:1999; opacity:0; pointer-events:none; transition:opacity .4s; backdrop-filter:blur(3px); }
+.cart-ov.on { opacity:1; pointer-events:all; }
+
+/* ── SEARCH OVERLAY ── */
+.s-ov { position:fixed; inset:0; background:rgba(8,8,16,.95); z-index:3000; display:flex; align-items:flex-start; justify-content:center; padding-top:110px; opacity:0; pointer-events:none; transition:opacity .3s; backdrop-filter:blur(24px); }
+.s-ov.on { opacity:1; pointer-events:all; }
+.s-box { width:100%; max-width:580px; padding:0 20px; }
+.s-inp { width:100%; background:rgba(108,99,255,.07); border:1.5px solid var(--bdr2); border-radius:14px; padding:18px 24px; color:var(--tx); font-family:'Syne',sans-serif; font-size:16px; font-weight:500; outline:none; letter-spacing:.5px; transition:border-color .2s; }
+.s-inp:focus { border-color:var(--accent); }
+.s-inp::placeholder { color:var(--tx3); }
+.s-hint { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--tx3); letter-spacing:3px; margin-top:14px; text-align:center; }
+.s-close-btn { display:block; margin:16px auto 0; padding:9px 22px; background:transparent; border:1px solid var(--bdr); border-radius:8px; color:var(--tx2); font-family:'Syne',sans-serif; font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .2s; }
+.s-close-btn:hover { border-color:var(--accent); color:var(--accentL); }
+
+/* ── TOAST ── */
+.toast-wrap { position:fixed; bottom:22px; right:22px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+.toast { padding:12px 18px; background:var(--bg2); border:1px solid var(--bdr); border-radius:10px; font-size:13px; letter-spacing:.3px; display:flex; align-items:center; gap:9px; box-shadow:0 8px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(108,99,255,.1); min-width:210px; animation:toastIn .3s ease; }
+@keyframes toastIn { from{transform:translateX(28px);opacity:0} to{transform:translateX(0);opacity:1} }
+.toast.success { border-color:rgba(0,200,150,.3); }
+.toast.error   { border-color:rgba(255,77,109,.3); }
+.toast.info    { border-color:rgba(108,99,255,.3); }
+
+/* REVEAL ANIMATION */
+.reveal { opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s ease; }
+.reveal.vis { opacity:1; transform:translateY(0); }
+
+@media(max-width:900px) { .h-cards{display:none} .foot-grid{grid-template-columns:1fr 1fr} }
+@media(max-width:600px) { .foot-grid{grid-template-columns:1fr} .n-links{display:none} .nw-form{flex-direction:column} }
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cur"></div>
+<div id="cur-r"></div>
+
+<!-- BG -->
+<canvas id="bgc"></canvas>
+<div class="noise"></div>
+<div class="vignette"></div>
+
+<!-- CART OVERLAY -->
+<div class="cart-ov" id="cart-ov" onclick="toggleCart()"></div>
+
+<!-- CART PANEL -->
+<div class="cart-panel" id="cart-panel">
+  <div class="cp-head">
+    <div class="cp-title">YOUR CART</div>
+    <button class="cp-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cp-items" id="cp-items"></div>
+  <div class="cp-foot">
+    <div class="cp-total">
+      <div class="cp-total-l">Total</div>
+      <div class="cp-total-v" id="cp-total">$0.00</div>
+    </div>
+    <button class="btn-checkout" onclick="checkout()">CHECKOUT →</button>
+  </div>
+</div>
+
+<!-- SEARCH OVERLAY -->
+<div class="s-ov" id="s-ov">
+  <div class="s-box">
+    <input class="s-inp" id="s-inp" placeholder="Search games, genres, developers…" oninput="doSearch(this.value)">
+    <div class="s-hint">ESC to close</div>
+    <button class="s-close-btn" onclick="closeSearch()">Close</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="n-logo" href="#">
+    <div class="n-logo-icon">🎮</div>
+    <div class="n-logo-wrap">
+      <div class="n-logo-name">HANIFX</div>
+      <div class="n-logo-tag">GAMING STORE</div>
+    </div>
+  </a>
+  <div class="n-links">
+    <a class="n-link" href="#games">Games</a>
+    <a class="n-link" href="#categories">Categories</a>
+    <a class="n-link" href="#deals">Deals</a>
+    <a class="n-link" href="#reviews">Reviews</a>
+  </div>
+  <div class="n-right">
+    <div class="n-icon-btn" onclick="openSearch()" title="Search">🔍</div>
+    <button class="cart-btn" onclick="toggleCart()">🛒 Cart <span class="c-cnt" id="c-cnt">0</span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-orbs"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="hero-grid"></div>
+  <div class="h-cards">
+    <div class="hc hc1"><div class="hc-ico">🎮</div><div class="hc-label">Latest Drop</div><div class="hc-val">Just released</div><span class="hc-pill pill-g">New</span></div>
+    <div class="hc hc2"><div class="hc-ico">🔥</div><div class="hc-label">Trending Now</div><div class="hc-val">2.4k players</div><span class="hc-pill pill-r">Hot</span></div>
+    <div class="hc hc3"><div class="hc-ico">💎</div><div class="hc-label">Flash Deal</div><div class="hc-val">Ends in 11h</div><span class="hc-pill pill-y">Sale</span></div>
+    <div class="hc hc4"><div class="hc-ico">⭐</div><div class="hc-label">Top Rated</div><div class="hc-val">4.9 / 5.0</div><span class="hc-pill pill-b">Best</span></div>
+  </div>
+  <div class="hero-inner">
+    <div class="h-eyebrow"><div class="h-eye-dot"></div>Bangladesh's #1 Gaming Destination</div>
+    <h1 class="h-title">
+      <span class="line1">YOUR ULTIMATE</span>
+      <span class="line2">GAMING UNIVERSE</span>
+    </h1>
+    <p class="h-sub">Premium games, instant APK delivery, unbeatable prices. HanifX Gaming Store — where every gamer belongs.</p>
+    <div class="h-btns">
+      <button class="btn-hero btn-solid" onclick="scrollTo('games')">EXPLORE GAMES →</button>
+      <button class="btn-hero btn-outline" onclick="scrollTo('deals')">VIEW DEALS</button>
+    </div>
+    <div class="h-stats">
+      <div class="h-stat"><div class="h-stat-n" id="hs-games">0</div><div class="h-stat-l">Games</div></div>
+      <div class="h-stat"><div class="h-stat-n">24/7</div><div class="h-stat-l">Support</div></div>
+      <div class="h-stat"><div class="h-stat-n">Instant</div><div class="h-stat-l">Delivery</div></div>
+      <div class="h-stat"><div class="h-stat-n">100%</div><div class="h-stat-l">Secure</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint"><div class="sc-line"></div><div class="sc-txt">Scroll</div></div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <div class="tick-item"><div class="tick-sep"></div>Instant APK Delivery</div>
+    <div class="tick-item"><div class="tick-sep"></div>Secure Payment</div>
+    <div class="tick-item"><div class="tick-sep"></div>24/7 Support</div>
+    <div class="tick-item"><div class="tick-sep"></div>100% Authentic Games</div>
+    <div class="tick-item"><div class="tick-sep"></div>Best Prices Guaranteed</div>
+    <div class="tick-item"><div class="tick-sep"></div>Free Updates</div>
+    <div class="tick-item"><div class="tick-sep"></div>Instant APK Delivery</div>
+    <div class="tick-item"><div class="tick-sep"></div>Secure Payment</div>
+    <div class="tick-item"><div class="tick-sep"></div>24/7 Support</div>
+    <div class="tick-item"><div class="tick-sep"></div>100% Authentic Games</div>
+    <div class="tick-item"><div class="tick-sep"></div>Best Prices Guaranteed</div>
+    <div class="tick-item"><div class="tick-sep"></div>Free Updates</div>
+  </div>
+</div>
+
+<!-- GAMES -->
+<section id="games" class="reveal">
+  <div class="s-head">
+    <div>
+      <div class="s-eyebrow"><div class="s-ey-line"></div><div class="s-ey-txt">Catalog</div></div>
+      <div class="s-title">ALL GAMES</div>
+      <div class="s-sub">Browse our full collection of premium games</div>
+    </div>
+  </div>
+  <div class="filters" id="filters">
+    <button class="f-btn on" onclick="filterGames('all',this)">All</button>
+    <button class="f-btn" onclick="filterGames('Action',this)">⚔️ Action</button>
+    <button class="f-btn" onclick="filterGames('RPG',this)">🧙 RPG</button>
+    <button class="f-btn" onclick="filterGames('Racing',this)">🏎️ Racing</button>
+    <button class="f-btn" onclick="filterGames('Horror',this)">🧟 Horror</button>
+    <button class="f-btn" onclick="filterGames('Sports',this)">⚽ Sports</button>
+    <button class="f-btn" onclick="filterGames('Strategy',this)">♟️ Strategy</button>
+    <button class="f-btn" onclick="filterGames('Adventure',this)">🌍 Adventure</button>
+    <button class="f-btn" onclick="filterGames('Puzzle',this)">🧩 Puzzle</button>
+  </div>
+  <div class="g-grid" id="g-grid"></div>
+</section>
+
+<!-- CATEGORIES -->
+<section id="categories" class="reveal" style="background:rgba(108,99,255,.03)">
+  <div class="s-eyebrow"><div class="s-ey-line"></div><div class="s-ey-txt">Browse</div></div>
+  <div class="s-title">CATEGORIES</div>
+  <div class="s-sub">Find your favourite genre and discover top titles</div>
+  <div class="cats">
+    <div class="cat" onclick="flt('Action')"><span class="cat-ico">⚔️</span><div class="cat-n">Action</div><div class="cat-c" id="cc-Action">0 Games</div></div>
+    <div class="cat" onclick="flt('RPG')"><span class="cat-ico">🧙</span><div class="cat-n">RPG</div><div class="cat-c" id="cc-RPG">0 Games</div></div>
+    <div class="cat" onclick="flt('Racing')"><span class="cat-ico">🏎️</span><div class="cat-n">Racing</div><div class="cat-c" id="cc-Racing">0 Games</div></div>
+    <div class="cat" onclick="flt('Horror')"><span class="cat-ico">🧟</span><div class="cat-n">Horror</div><div class="cat-c" id="cc-Horror">0 Games</div></div>
+    <div class="cat" onclick="flt('Sports')"><span class="cat-ico">⚽</span><div class="cat-n">Sports</div><div class="cat-c" id="cc-Sports">0 Games</div></div>
+    <div class="cat" onclick="flt('Strategy')"><span class="cat-ico">♟️</span><div class="cat-n">Strategy</div><div class="cat-c" id="cc-Strategy">0 Games</div></div>
+    <div class="cat" onclick="flt('Adventure')"><span class="cat-ico">🌍</span><div class="cat-n">Adventure</div><div class="cat-c" id="cc-Adventure">0 Games</div></div>
+    <div class="cat" onclick="flt('Puzzle')"><span class="cat-ico">🧩</span><div class="cat-n">Puzzle</div><div class="cat-c" id="cc-Puzzle">0 Games</div></div>
+  </div>
+</section>
+
+<!-- DEALS -->
+<section id="deals" class="reveal">
+  <div class="deal-timer">
+    <div class="dt-left"><div class="dt-title">🔥 FLASH SALE</div><div class="dt-sub">Limited time — grab the best deals before they expire</div></div>
+    <div class="dt-blocks">
+      <div class="dt-b"><div class="dt-n" id="t-h">00</div><div class="dt-l">Hours</div></div>
+      <div class="dt-sep">:</div>
+      <div class="dt-b"><div class="dt-n" id="t-m">00</div><div class="dt-l">Mins</div></div>
+      <div class="dt-sep">:</div>
+      <div class="dt-b"><div class="dt-n" id="t-s">00</div><div class="dt-l">Secs</div></div>
+    </div>
+  </div>
+  <div class="s-eyebrow"><div class="s-ey-line"></div><div class="s-ey-txt">Best Prices</div></div>
+  <div class="s-title">HOT DEALS</div>
+  <div class="s-sub">Discounted games — limited stock available</div>
+  <div class="deals-g" id="deals-g" style="margin-top:28px"></div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews" class="reveal" style="background:rgba(108,99,255,.02)">
+  <div class="s-eyebrow"><div class="s-ey-line"></div><div class="s-ey-txt">Community</div></div>
+  <div class="s-title">GAMER REVIEWS</div>
+  <div class="s-sub">Trusted by thousands of gamers across Bangladesh</div>
+  <div class="rev-grid">
+    <div class="rev-c"><div class="rev-stars">★★★★★</div><div class="rev-q">"Best gaming store in Bangladesh. Instant APK delivery and authentic games. Totally recommend HanifX!"</div><div class="rev-author"><div class="rev-av">RK</div><div><div class="rev-name">Rakib Khan</div><div class="rev-badge">Verified Buyer</div></div></div></div>
+    <div class="rev-c"><div class="rev-stars">★★★★★</div><div class="rev-q">"Got my APK within seconds after purchase. The dark design is so smooth and comfortable on eyes at night."</div><div class="rev-author"><div class="rev-av">SH</div><div><div class="rev-name">Sadia Hasan</div><div class="rev-badge">Verified Buyer</div></div></div></div>
+    <div class="rev-c"><div class="rev-stars">★★★★☆</div><div class="rev-q">"Huge game collection and flash deals are incredible value. HanifX is my go-to gaming store now."</div><div class="rev-author"><div class="rev-av">NI</div><div><div class="rev-name">Nabil Islam</div><div class="rev-badge">Verified Buyer</div></div></div></div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="reveal">
+  <div class="nw-box">
+    <h2>JOIN THE HANIFX COMMUNITY</h2>
+    <p>Exclusive deals, early access & gaming news delivered to your inbox</p>
+    <div class="nw-form">
+      <input class="nw-inp" id="nw-e" type="email" placeholder="Enter your email…">
+      <button class="nw-btn" onclick="subscribe()">Subscribe</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="foot-brand-name">HANIFX</div>
+      <div class="foot-brand-tag">Gaming Store</div>
+      <div class="foot-desc">Bangladesh's premier destination for premium games and APK content. Instant delivery, best prices, 100% secure.</div>
+      <div class="foot-socials">
+        <div class="foot-soc" title="Facebook">📘</div>
+        <div class="foot-soc" title="Discord">💬</div>
+        <div class="foot-soc" title="YouTube">📺</div>
+        <div class="foot-soc" title="WhatsApp">📱</div>
+      </div>
+    </div>
+    <div class="foot-col"><h4>Shop</h4><a href="#games">All Games</a><a href="#deals">Hot Deals</a><a href="#categories">Categories</a><a href="#">New Arrivals</a><a href="#">Top Sellers</a></div>
+    <div class="foot-col"><h4>Support</h4><a href="#">Help Center</a><a href="#">Track Order</a><a href="#">Refund Policy</a><a href="#">Contact Us</a><a href="#">FAQ</a></div>
+    <div class="foot-col"><h4>Legal</h4><a href="#">Privacy Policy</a><a href="#">Terms of Use</a><a href="#">Cookie Policy</a><a href="#">Licenses</a></div>
+  </div>
+  <div class="foot-bottom">
+    <div class="foot-copy">© 2026 HanifX Gaming Store. All rights reserved.</div>
+    <div class="foot-tags">
+      <span class="ftag">🔒 Secure</span>
+      <span class="ftag">⚡ Instant</span>
+      <span class="ftag">✅ Verified</span>
+      <a href="hanif-store-admin.html" target="_blank" class="foot-admin">⚙️ Admin</a>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+'use strict';
+
+// ── CURSOR ──
+const cur=document.getElementById('cur'), curR=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px'; });
+document.addEventListener('mousedown',()=>document.body.classList.add('clicking'));
+document.addEventListener('mouseup',()=>document.body.classList.remove('clicking'));
+(function anim(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; curR.style.left=rx+'px'; curR.style.top=ry+'px'; requestAnimationFrame(anim); })();
+document.querySelectorAll('button,a,.gc,.cat,.deal-c,.n-icon-btn').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ curR.style.transform='translate(-50%,-50%) scale(1.6)'; curR.style.borderColor='rgba(108,99,255,.7)'; });
+  el.addEventListener('mouseleave',()=>{ curR.style.transform='translate(-50%,-50%) scale(1)'; curR.style.borderColor='rgba(108,99,255,.5)'; });
+});
+
+// ── CANVAS PARTICLES ──
+const c=document.getElementById('bgc'), ctx=c.getContext('2d');
+let W,H,pts=[];
+function rsz(){ W=c.width=innerWidth; H=c.height=innerHeight; }
+rsz(); window.addEventListener('resize',rsz);
+for(let i=0;i<100;i++) pts.push({ x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35, r:Math.random()*1.2+.4, a:Math.random()*.4+.08, col:Math.random()>.55?'108,99,255':'0,212,255' });
+(function draw(){
+  ctx.clearRect(0,0,W,H);
+  for(let i=0;i<pts.length;i++){
+    for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.hypot(dx,dy);
+      if(d<130){ ctx.beginPath(); ctx.strokeStyle=`rgba(108,99,255,${.05*(1-d/130)})`; ctx.lineWidth=.5; ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.stroke(); }
+    }
+  }
+  pts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(${p.col},${p.a})`; ctx.fill(); });
+  requestAnimationFrame(draw);
+})();
+
+// ── NAV SCROLL ──
+window.addEventListener('scroll',()=>{ document.getElementById('nav').classList.toggle('sc',scrollY>60); });
+
+// ── TIMER ──
+const end=new Date(Date.now()+11*3600000+47*60000+28000);
+function tick(){
+  let d=Math.max(0,end-Date.now());
+  const h=Math.floor(d/3600000); d-=h*3600000;
+  const m=Math.floor(d/60000); d-=m*60000;
+  const s=Math.floor(d/1000);
+  document.getElementById('t-h').textContent=p2(h);
+  document.getElementById('t-m').textContent=p2(m);
+  document.getElementById('t-s').textContent=p2(s);
+}
+tick(); setInterval(tick,1000);
+
+// ── DATA ──
+let GAMES=[];
+function loadGames(){
+  try{ const s=localStorage.getItem('hanif_store_games'); if(s) GAMES=JSON.parse(s); }catch(e){ GAMES=[]; }
+  renderGames(); updateCats(); document.getElementById('hs-games').textContent=GAMES.length||'0';
+}
+
+// ── FILTER ──
+let activeF='all';
+function filterGames(g,el){
+  activeF=g;
+  document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('on'));
+  if(el) el.classList.add('on');
+  else{ document.querySelectorAll('.f-btn').forEach(b=>{ if(b.textContent.includes(g)||g==='all'&&b.textContent==='All') b.classList.add('on'); }); }
+  renderGames();
+}
+function flt(g){ filterGames(g,null); scrollTo('games'); }
+
+function updateCats(){
+  ['Action','RPG','Racing','Horror','Sports','Strategy','Adventure','Puzzle'].forEach(g=>{
+    const el=document.getElementById('cc-'+g);
+    if(el){ const n=GAMES.filter(x=>x.genre===g&&x.status!=='inactive').length; el.textContent=n+' Game'+(n!==1?'s':''); }
+  });
+}
+
+// ── RENDER GAMES ──
+function renderGames(){
+  const list=GAMES.filter(g=>g.status!=='inactive'&&(activeF==='all'||g.genre===activeF));
+  const grid=document.getElementById('g-grid');
+  if(!list.length){
+    grid.innerHTML=`<div class="empty-state"><div class="empty-ico">🎮</div><div class="empty-t">No Games Yet</div><div class="empty-s">${activeF!=='all'?'No '+activeF+' games found.':'Add games from the admin panel to see them here.'}</div></div>`;
+  } else {
+    grid.innerHTML=list.map(g=>`
+      <div class="gc">
+        <div class="gc-img-wrap">
+          ${g.cover?`<img class="gc-img" src="${g.cover}" alt="${esc(g.title)}">`:`<div class="gc-img-ph">${g.icon||'🎮'}</div>`}
+          <div class="gc-img-fade"></div>
+          <div class="gc-chips">
+            ${g.status==='featured'?'<span class="chip chip-feat">Featured</span>':''}
+            ${g.orig&&+g.orig>+g.price?`<span class="chip chip-sale">-${Math.round((1-g.price/g.orig)*100)}%</span>`:''}
+          </div>
+          <div class="gc-wish ${wishlist.has(g.id)?'on':''}" id="w-${g.id}" onclick="event.stopPropagation();toggleWish(${g.id},this)">${wishlist.has(g.id)?'❤️':'🤍'}</div>
+        </div>
+        <div class="gc-body">
+          <div class="gc-platform">${esc(g.plat||'')}${g.version?' · v'+esc(g.version):''}</div>
+          <div class="gc-title" title="${esc(g.title)}">${esc(g.title)}</div>
+          <div class="gc-dev">${esc(g.dev||'')}</div>
+          <div class="gc-footer">
+            <div class="gc-rating">★★★★★ <span>(4.9)</span></div>
+            <div class="gc-price-wrap">
+              ${g.orig&&+g.orig>+g.price?`<span class="gc-orig">$${(+g.orig).toFixed(2)}</span>`:''}
+              <span class="gc-price">$${(+g.price).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+        <button class="gc-cta" onclick="addCart(${JSON.stringify(g).replace(/"/g,'&quot;')})">${g.apk?'📦 GET APK':'🛒 ADD TO CART'}</button>
+      </div>`).join('');
+  }
+  renderDeals(list);
+}
+
+function renderDeals(list){
+  const disc=list.filter(g=>g.orig&&+g.orig>+g.price);
+  const dg=document.getElementById('deals-g');
+  if(!disc.length){
+    dg.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 0"><div style="font-size:36px;opacity:.15;margin-bottom:10px">🏷️</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--tx3)">NO DEALS YET</div><div style="font-size:11px;color:var(--tx3);margin-top:6px;letter-spacing:.5px">Add discounted games from admin panel</div></div>`;
+    return;
+  }
+  dg.innerHTML=disc.map(g=>`
+    <div class="deal-c" onclick="addCart(${JSON.stringify(g).replace(/"/g,'&quot;')})">
+      <div class="deal-thumb">${g.cover?`<img src="${g.cover}" alt="">`:(g.icon||'🎮')}</div>
+      <div class="deal-info">
+        <div class="deal-t">${esc(g.title)}</div>
+        <div class="deal-d">${esc(g.dev||'')}</div>
+        <div class="deal-pr">
+          <span class="deal-new">$${(+g.price).toFixed(2)}</span>
+          <span class="deal-old">$${(+g.orig).toFixed(2)}</span>
+          <span class="deal-off">-${Math.round((1-g.price/g.orig)*100)}%</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── CART ──
+let cart=[], wishlist=new Set();
+function toggleCart(){
+  document.getElementById('cart-panel').classList.toggle('open');
+  document.getElementById('cart-ov').classList.toggle('on');
+  renderCart();
+}
+function renderCart(){
+  const el=document.getElementById('cp-items');
+  if(!cart.length){
+    el.innerHTML=`<div class="cp-empty"><div class="cp-empty-ico">🛒</div><div class="cp-empty-t">Cart is Empty</div><div style="font-size:11px;color:var(--tx3);margin-top:6px;letter-spacing:.5px">Add games to get started</div></div>`;
+  } else {
+    el.innerHTML=cart.map(g=>`
+      <div class="ci">
+        <div class="ci-img">${g.cover?`<img src="${g.cover}" alt="">`:(g.icon||'🎮')}</div>
+        <div class="ci-info">
+          <div class="ci-t">${esc(g.title)}</div>
+          <div style="font-size:10px;color:var(--tx3);letter-spacing:.5px">${esc(g.plat||'')}</div>
+          <div class="ci-p">$${(+g.price).toFixed(2)}</div>
+        </div>
+        <button class="ci-rm" onclick="removeCart(${g.id})">✕</button>
+      </div>`).join('');
+  }
+  const total=cart.reduce((a,g)=>a+(+g.price),0);
+  document.getElementById('cp-total').textContent='$'+total.toFixed(2);
+  document.getElementById('c-cnt').textContent=cart.length;
+}
+function addCart(g){
+  if(cart.find(c=>c.id===g.id)){ toast('Already in cart!','info','🛒'); return; }
+  cart.push(g); renderCart();
+  toast(`"${g.title}" added to cart!`,'success','✅');
+  const btn=document.querySelector('.cart-btn');
+  btn.style.transform='scale(1.08)'; setTimeout(()=>btn.style.transform='',180);
+}
+function removeCart(id){ cart=cart.filter(c=>c.id!==id); renderCart(); toast('Removed','info','🗑️'); }
+function checkout(){ if(!cart.length){ toast('Cart is empty!','error','⚠️'); return; } toast('Checkout coming soon! 🎮','info','🛒'); }
+
+// ── WISHLIST ──
+function toggleWish(id,el){
+  if(wishlist.has(id)){ wishlist.delete(id); el.classList.remove('on'); el.textContent='🤍'; toast('Removed from wishlist','info','🤍'); }
+  else{ wishlist.add(id); el.classList.add('on'); el.textContent='❤️'; toast('Added to wishlist!','success','❤️'); }
+}
+
+// ── SEARCH ──
+function openSearch(){ document.getElementById('s-ov').classList.add('on'); setTimeout(()=>document.getElementById('s-inp').focus(),80); }
+function closeSearch(){ document.getElementById('s-ov').classList.remove('on'); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSearch(); });
+function doSearch(q){
+  if(!q){ renderGames(); return; }
+  q=q.toLowerCase();
+  const res=GAMES.filter(g=>(g.title||'').toLowerCase().includes(q)||(g.dev||'').toLowerCase().includes(q)||(g.genre||'').toLowerCase().includes(q));
+  const bk=GAMES; GAMES=res; renderGames(); GAMES=bk;
+}
+
+// ── NEWSLETTER ──
+function subscribe(){
+  const v=document.getElementById('nw-e').value.trim();
+  if(!v||!v.includes('@')){ toast('Enter a valid email','error','⚠️'); return; }
+  document.getElementById('nw-e').value='';
+  toast('Welcome to HanifX! 🎮','success','✅');
+}
+
+// ── TOAST ──
+function toast(msg,type='info',ico='ℹ️'){
+  const w=document.getElementById('toast-wrap');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<span>${ico}</span><span>${msg}</span>`;
+  w.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+// ── SCROLL REVEAL ──
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('vis'); });
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// ── UTILS ──
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function p2(n){ return String(n).padStart(2,'0'); }
+function scrollTo(id){ document.getElementById(id)?.scrollIntoView({behavior:'smooth'}); }
+
+// ── INIT ──
+loadGames();
+renderCart();
+</script>
+</body>
+  </html>
